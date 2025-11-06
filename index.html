@@ -1,0 +1,1630 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simrik Yatayat - Bus Ticketing & Tours</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* Custom Colors & Fonts adapted for Simrik Yatayat */
+        :root {
+            --simrik-dark-blue: #0A1420; 
+            --simrik-teal: #008080;     
+            --simrik-teal-light: #00A3A3;
+            --primary-text: #333333;
+            --secondary-text: #666666;
+            --light-bg: #F8F8F8;
+            --feature-orange: #FF8C00; 
+            --footer-bg-dark: #1E1E1E;
+            --toggle-on: #ef4444; 
+            --toggle-off: #d1d5db; 
+        }
+
+        /* Applying Custom Colors */
+        .bg-simrik-dark { background-color: var(--simrik-dark-blue); }
+        .text-simrik-teal { color: var(--simrik-teal); }
+        .bg-simrik-teal { background-color: var(--simrik-teal); }
+        .bg-simrik-teal-light { background-color: var(--simrik-teal-light); }
+        .text-feature-orange { color: var(--feature-orange); }
+        .bg-footer-dark { background-color: var(--footer-bg-dark); }
+        .bg-simrik-dark1 { background-image: url(busback.png); } 
+
+        /* Custom Input Styling for Booking Header */
+        .header-input {
+            background-color: transparent;
+            border: none;
+            color: white;
+            padding: 0 10px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        .header-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Bus Image Section */
+        .bus-image-hero {
+            background-image: url('heropic.png'); 
+            background-size: cover;
+            background-position: center;
+            height: 600px; 
+        }
+        
+        /* Footer Pattern Simulation (as seen in the original image) */
+        .footer-pattern {
+            background-color: var(--footer-bg-dark);
+            background-image: radial-gradient(circle at 50% 100%, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 10px 10px;
+        }
+
+        /* Animation Styles (Initial state for JS) */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Custom Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--toggle-off);
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 28px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--toggle-on);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--toggle-on);
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(22px);
+            -ms-transform: translateX(22px);
+            transform: translateX(22px);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.6); 
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            position: relative;
+            animation: slideIn 0.3s ease-out forwards;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: #333;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Destination Card Hover Effect */
+        .destination-card-image {
+            transition: transform 0.5s ease-in-out;
+        }
+        .destination-card:hover .destination-card-image {
+            transform: scale(1.08);
+        }
+
+        /* Passenger Counter Styling */
+        .passenger-counter-container {
+            position: relative;
+        }
+        .passenger-dropdown {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 180px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 100;
+            border-radius: 8px;
+            padding: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            top: calc(100% + 10px); /* Position below the input */
+        }
+        .passenger-dropdown.show {
+            display: block;
+        }
+        .passenger-control {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+        }
+        .passenger-control button {
+            background-color: var(--simrik-teal);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .passenger-control button:hover {
+            background-color: var(--simrik-teal-light);
+        }
+
+        /* Improved booking section padding */
+        .booking-section {
+            padding: 1rem 0.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .booking-section {
+                padding: 2rem 1rem;
+            }
+        }
+
+        /* Modern gradient background for hero */
+        .hero-gradient {
+            background: linear-gradient(135deg, rgba(10, 20, 32, 0.85) 0%, rgba(0, 128, 128, 0.7) 100%);
+        }
+
+        /* Dynamic floating animation */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        /* Dropdown animation */
+        .dropdown-animate {
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease-out;
+        }
+        
+        .dropdown-animate.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Seat selection styles */
+        .seat {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .seat.available {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+        
+        .seat.available:hover {
+            background-color: #d1d5db;
+        }
+        
+        .seat.selected {
+            background-color: var(--simrik-teal);
+            color: white;
+        }
+        
+        .seat.occupied {
+            background-color: #ef4444;
+            color: white;
+            cursor: not-allowed;
+        }
+        
+        .seat.driver {
+            background-color: #6b7280;
+            color: white;
+            cursor: not-allowed;
+        }
+        
+        .aisle {
+            width: 40px;
+            height: 40px;
+        }
+
+        /* Support section styles */
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Search Overlay Styles */
+        .search-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            z-index: 999;
+            display: none;
+            overflow-y: auto;
+            padding: 2rem 0;
+        }
+        
+        .search-overlay.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .fade-in-scale {
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+        
+        .fade-in-scale.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        /* Bus layout for seat selection */
+        .bus-layout {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .driver-seat {
+            width: 60px;
+            height: 40px;
+            background-color: #6b7280;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
+        
+        .seat-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .aisle-space {
+            width: 30px;
+        }
+        
+        /* Close button for overlay */
+        .overlay-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .overlay-close:hover {
+            color: #333;
+        }
+        
+        /* Support section background image */
+        .support-bg-image {
+            background-image: url('busback.png');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .custom-logo-radius {
+            border-radius: 8px; /
+        }
+        .custom-logo-radius1 {
+            border-radius: 5px; 
+        }
+        
+        /* Mobile-specific styles */
+        @media (max-width: 767px) {
+            .mobile-booking-container {
+                background-color: rgba(55, 65, 81, 0.7);
+                border-radius: 16px;
+                padding: 1rem;
+                margin-top: 1rem;
+            }
+            
+            .mobile-booking-row {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .mobile-booking-item {
+                flex: 1 1 calc(50% - 0.5rem);
+                min-width: 140px;
+                background-color: rgba(75, 85, 99, 0.5);
+                border-radius: 12px;
+                padding: 0.75rem;
+                text-align: center;
+            }
+            
+            .mobile-search-button {
+                width: 100%;
+                margin-top: 0.5rem;
+                padding: 0.75rem;
+                border-radius: 12px;
+                font-weight: bold;
+            }
+            
+            .mobile-features-container {
+                display: flex;
+                flex-direction: column;
+                gap: 1.5rem;
+                padding: 1rem 0;
+            }
+            
+            .mobile-feature-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                padding: 1rem;
+                background-color: white;
+                border-radius: 12px;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            }
+            
+            .mobile-menu-button {
+                display: block;
+                background: none;
+                border: none;
+                color: white;
+                font-size: 1.5rem;
+                cursor: pointer;
+            }
+            
+            .mobile-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background-color: var(--simrik-dark-blue);
+                padding: 1rem;
+                z-index: 100;
+            }
+            
+            .mobile-menu.active {
+                display: block;
+            }
+            
+            .mobile-menu-item {
+                display: block;
+                padding: 0.75rem 1rem;
+                color: white;
+                text-decoration: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .mobile-menu-item:last-child {
+                border-bottom: none;
+            }
+        }
+        
+        @media (min-width: 768px) {
+            .mobile-menu-button, .mobile-menu {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="font-sans antialiased bg-white">
+
+    <header class="bg-simrik-dark text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center text-sm">
+            <!-- Mobile menu button -->
+            <button class="mobile-menu-button lg:hidden">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <section class="bg-brand-black text-white py-2 shadow-lg flex justify-between items-center">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex flex-col sm:flex-row justify-center lg:justify-end items-center space-y-2 sm:space-y-0 sm:space-x-8 text-xs font-medium">
+
+                       
+                        <div class="top-bar-item hidden md:flex">
+                            
+                            <svg class="w-4 h-4 mr-2 text-brand-accent-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                            <a href="mailto:simrikyatayat@gmail.com" class="hover:text-brand-accent-white transition duration-150">simrikyatayat@gmail.com</a>
+                        </div>
+
+                        
+                        <div class="top-bar-item hidden md:flex">
+                            
+                            <svg class="w-4 h-4 mr-2 text-brand-accent-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                            <a href="tel:+9855049452" class="hover:text-brand-accent-white transition duration-150">9855049452</a>
+                        </div>
+
+
+                        
+                        <div class="top-bar-item hidden md:flex">
+                        
+                            <svg class="w-4 h-4 mr-2 text-brand-accent-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            <span>Koteswor</span>
+                        </div>
+
+                        
+                        <div class="top-bar-item hidden md:flex">
+                            
+                            <svg class="w-4 h-4 mr-2 text-brand-accent-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>10:00AM - 05:00PM</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <div class="flex space-x-4 items-center">
+                <button class="text-white px-3 py-1 rounded-lg text-xs font-semibold hover:bg-gray-800 transition">SIGN UP</button>
+                <button class="bg-simrik-teal text-white px-3 py-1 rounded-lg text-xs font-semibold hover:bg-simrik-teal-light transition">LOG IN</button>
+                <i class="fas fa-search text-gray-400 hover:text-white cursor-pointer"></i>
+            </div>
+        </div>
+        
+        <!-- Mobile menu -->
+        <div class="mobile-menu lg:hidden">
+            <a href="#" class="mobile-menu-item">Book</a>
+            <a href="#" class="mobile-menu-item">Check-in</a>
+            <a href="#" class="mobile-menu-item">My Trips</a>
+            <a href="#" class="mobile-menu-item">Travel Info</a>
+            <a href="#" class="mobile-menu-item">Need Help?</a>
+        </div>
+
+        <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 booking-section">
+            <div class="text-2xl font-extrabold flex items-center space-x-2">
+                <img src="simriklogo1.png" alt="Simrik Logo" class="h-10 md:h-12 custom-logo-radius" >
+               <i class="fas fa-bus text-simrik-teal floating hidden md:block"></i> 
+            </div>
+
+            <!-- Desktop Booking Form -->
+            <div class="hidden md:flex flex-1 max-w-5xl bg-gray-700/50 p-2 md:p-3 rounded-full md:flex-row justify-between items-center border border-gray-600 space-y-2 md:space-y-0 md:space-x-2">
+                
+                <div class="flex w-full md:w-auto flex-col items-center p-2 rounded-full hover:bg-gray-600/50 transition relative group">
+                    <span class="text-simrik-teal text-xs uppercase font-semibold">From</span>
+                    <select id="fromDestination" class="header-input w-32 text-center font-bold appearance-none bg-transparent cursor-pointer pr-8">
+                        <option value="Kathmandu" class="bg-gray-800 text-white">Kathmandu</option>
+                        <option value="Biratnagar" class="bg-gray-800 text-white">Biratnagar</option>
+                        <option value="Dharan" class="bg-gray-800 text-white">Dharan</option>
+                        <option value="Kakarvitta" class="bg-gray-800 text-white">Kakarvitta</option>
+                    </select>
+                    <span class="text-gray-400 text-xs">Origin</span>
+                    <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-white pointer-events-none"></i>
+                </div>
+                
+                <i class="fas fa-exchange-alt text-gray-400 text-sm hidden md:block"></i>
+
+                <div class="flex w-full md:w-auto flex-col items-center p-2 rounded-full hover:bg-gray-600/50 transition relative group">
+                    <span class="text-simrik-teal text-xs uppercase font-semibold">To</span>
+                    <select id="toDestination" class="header-input w-32 text-center font-bold appearance-none bg-transparent cursor-pointer pr-8">
+                        <option value="" disabled selected class="bg-gray-800 text-white">Select Destination</option>
+                        <option value="Kathmandu" class="bg-gray-800 text-white">Kathmandu</option>
+                        <option value="Biratnagar" class="bg-gray-800 text-white">Biratnagar</option>
+                        <option value="Dharan" class="bg-gray-800 text-white">Dharan</option>
+                        <option value="Kakarvitta" class="bg-gray-800 text-white">Kakarvitta</option>
+                    </select>
+                    <span class="text-gray-400 text-xs">Destination</span>
+                    <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-white pointer-events-none"></i>
+                </div>
+
+                <div class="hidden sm:block border-l border-gray-600 h-8 mx-2"></div>
+                
+                <div class="flex w-full md:w-auto flex-col items-center p-2 rounded-full hover:bg-gray-600/50 transition">
+                    <span class="text-simrik-teal text-xs uppercase font-semibold">Date</span>
+                    <input type="date" id="departDate" class="header-input w-32 text-center font-bold cursor-pointer px-2">
+                    <span class="text-gray-400 text-xs">Depart</span>
+                </div>
+
+                <div class="flex w-full md:w-auto flex-col items-center p-2 rounded-full hover:bg-gray-600/50 transition passenger-counter-container" id="passengerInputContainer">
+                    <span class="text-simrik-teal text-xs uppercase font-semibold">Passengers</span>
+                    <input type="text" id="passengerCountDisplay" value="1 Passenger" class="header-input w-32 text-center font-bold cursor-pointer" readonly>
+                    <span class="text-gray-400 text-xs">Total</span>
+                    
+                    <div id="passengerDropdown" class="passenger-dropdown dropdown-animate">
+                        <div class="passenger-control">
+                            <span class="text-gray-800 font-medium">Adults</span>
+                            <div class="flex items-center space-x-2">
+                                <button type="button" data-type="minus" data-target="adults">-</button>
+                                <span id="adultCount" class="text-gray-800 font-bold w-6 text-center">1</span>
+                                <button type="button" data-type="plus" data-target="adults">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hidden sm:block border-l border-gray-600 h-8 mx-2"></div>
+
+                <div class="flex items-center space-x-3 p-2 rounded-full hover:bg-gray-600/50 transition cursor-pointer" id="womenBookingButton">
+                    <img src="womanbook.jpg" alt="Women Icon" class="w-6 h-6 custom-logo-radius1"> 
+                    <div class="flex flex-col text-left">
+                        <span class="text-white text-sm font-semibold">Booking for women</span>
+                        <a href="#" id="knowMoreLink" class="text-blue-300 text-xs hover:underline">Know more</a>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="womenBookingToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <button class="bg-simrik-teal-light text-white px-6 py-2 rounded-full font-semibold text-sm shadow-lg hover:bg-simrik-teal transition duration-300 w-full md:w-auto mt-2 md:mt-0" id="searchBusButton">
+                    SEARCH BUS
+                </button>
+            </div>
+            
+            <!-- Mobile Booking Form -->
+            <div class="md:hidden w-full mobile-booking-container">
+                <div class="mobile-booking-row">
+                    <div class="mobile-booking-item">
+                        <span class="text-simrik-teal text-xs uppercase font-semibold">From</span>
+                        <select id="fromDestinationMobile" class="header-input w-full text-center font-bold appearance-none bg-transparent cursor-pointer">
+                            <option value="Kathmandu" class="bg-gray-800 text-white">Kathmandu</option>
+                            <option value="Biratnagar" class="bg-gray-800 text-white">Biratnagar</option>
+                            <option value="Dharan" class="bg-gray-800 text-white">Dharan</option>
+                            <option value="Kakarvitta" class="bg-gray-800 text-white">Kakarvitta</option>
+                        </select>
+                        <span class="text-gray-400 text-xs">Origin</span>
+                    </div>
+                    
+                    <div class="mobile-booking-item">
+                        <span class="text-simrik-teal text-xs uppercase font-semibold">To</span>
+                        <select id="toDestinationMobile" class="header-input w-full text-center font-bold appearance-none bg-transparent cursor-pointer">
+                            <option value="" disabled selected class="bg-gray-800 text-white">Destination</option>
+                            <option value="Kathmandu" class="bg-gray-800 text-white">Kathmandu</option>
+                            <option value="Biratnagar" class="bg-gray-800 text-white">Biratnagar</option>
+                            <option value="Dharan" class="bg-gray-800 text-white">Dharan</option>
+                            <option value="Kakarvitta" class="bg-gray-800 text-white">Kakarvitta</option>
+                        </select>
+                        <span class="text-gray-400 text-xs">Destination</span>
+                    </div>
+                </div>
+                
+                <div class="mobile-booking-row">
+                    <div class="mobile-booking-item">
+                        <span class="text-simrik-teal text-xs uppercase font-semibold">Date</span>
+                        <input type="date" id="departDateMobile" class="header-input w-full text-center font-bold cursor-pointer">
+                        <span class="text-gray-400 text-xs">Depart</span>
+                    </div>
+                    
+                    <div class="mobile-booking-item">
+                        <span class="text-simrik-teal text-xs uppercase font-semibold">Passengers</span>
+                        <input type="text" id="passengerCountDisplayMobile" value="1 Passenger" class="header-input w-full text-center font-bold cursor-pointer" readonly>
+                        <span class="text-gray-400 text-xs">Total</span>
+                    </div>
+                </div>
+                
+                <div class="mobile-booking-row">
+                    <div class="mobile-booking-item flex items-center justify-center">
+                        <img src="womanbook.jpg" alt="Women Icon" class="w-5 h-5 custom-logo-radius1 mr-2"> 
+                        <div class="flex flex-col text-left">
+                            <span class="text-white text-xs font-semibold">Women Booking</span>
+                            <a href="#" id="knowMoreLinkMobile" class="text-blue-300 text-xs hover:underline">Know more</a>
+                        </div>
+                        <label class="toggle-switch ml-2">
+                            <input type="checkbox" id="womenBookingToggleMobile">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <button class="bg-simrik-teal-light text-white mobile-search-button font-semibold shadow-lg hover:bg-simrik-teal transition duration-300" id="searchBusButtonMobile">
+                    SEARCH BUS
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Search Overlay -->
+    <div id="searchOverlay" class="search-overlay">
+        <button class="overlay-close" id="closeOverlay">
+            <i class="fas fa-times"></i>
+        </button>
+        
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl md:text-3xl font-bold text-center mb-8 text-gray-800">Available Buses</h2>
+            
+            <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden fade-in-scale" id="searchResults">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">Bus Selection</h3>
+                        <span class="bg-simrik-teal text-white px-3 py-1 rounded-full text-sm">3 buses available</span>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <!-- Bus Option 1 -->
+                        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+                                <div class="mb-2 md:mb-0">
+                                    <h4 class="font-bold text-lg">Simrik Deluxe A/C</h4>
+                                    <p class="text-gray-600 text-sm">Departure: 7:00 AM • Arrival: 3:00 PM</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-bold text-lg text-simrik-teal">Rs. 1200</p>
+                                    <p class="text-gray-600 text-sm">per person</p>
+                                </div>
+                            </div>
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                                <div class="flex flex-wrap gap-2 mb-2 md:mb-0">
+                                    <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">A/C</span>
+                                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">Wi-Fi</span>
+                                    <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">Charging Port</span>
+                                </div>
+                                <button class="bg-simrik-teal text-white px-4 py-2 rounded-lg font-semibold hover:bg-simrik-teal-light transition select-bus" data-bus="simrik-deluxe">
+                                    Select Seats
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Bus Option 2 -->
+                        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+                                <div class="mb-2 md:mb-0">
+                                    <h4 class="font-bold text-lg">Simrik Express</h4>
+                                    <p class="text-gray-600 text-sm">Departure: 9:30 AM • Arrival: 5:30 PM</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-bold text-lg text-simrik-teal">Rs. 900</p>
+                                    <p class="text-gray-600 text-sm">per person</p>
+                                </div>
+                            </div>
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                                <div class="flex flex-wrap gap-2 mb-2 md:mb-0">
+                                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">Wi-Fi</span>
+                                    <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">Charging Port</span>
+                                </div>
+                                <button class="bg-simrik-teal text-white px-4 py-2 rounded-lg font-semibold hover:bg-simrik-teal-light transition select-bus" data-bus="simrik-express">
+                                    Select Seats
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Bus Option 3 -->
+                        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+                                <div class="mb-2 md:mb-0">
+                                    <h4 class="font-bold text-lg">Simrik Night Rider</h4>
+                                    <p class="text-gray-600 text-sm">Departure: 10:00 PM • Arrival: 6:00 AM</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-bold text-lg text-simrik-teal">Rs. 1100</p>
+                                    <p class="text-gray-600 text-sm">per person</p>
+                                </div>
+                            </div>
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                                <div class="flex flex-wrap gap-2 mb-2 md:mb-0">
+                                    <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">A/C</span>
+                                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">Wi-Fi</span>
+                                    <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">Sleeper</span>
+                                </div>
+                                <button class="bg-simrik-teal text-white px-4 py-2 rounded-lg font-semibold hover:bg-simrik-teal-light transition select-bus" data-bus="simrik-night">
+                                    Select Seats
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seat Selection Modal -->
+    <div id="seatSelectionModal" class="modal">
+        <div class="modal-content max-w-4xl">
+            <span class="close-button">&times;</span>
+            <div class="mb-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-2" id="selectedBusName">Select Your Seats</h3>
+                <p class="text-gray-600">Click on available seats to select them</p>
+            </div>
+            
+            <div class="bg-gray-100 p-4 md:p-6 rounded-lg mb-6">
+                <div class="bus-layout mb-6" id="busSeatLayout">
+                    <!-- Seats by JavaScript -->
+                </div>
+                
+                <div class="flex flex-wrap justify-center gap-4 md:gap-6 text-sm">
+                    <div class="flex items-center">
+                        <div class="seat available mr-2"></div>
+                        <span>Available</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="seat occupied mr-2"></div>
+                        <span>Occupied</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="seat selected mr-2"></div>
+                        <span>Selected</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="text-center md:text-left">
+                    <p class="text-gray-600">Selected Seats: <span id="selectedSeatsCount">0</span></p>
+                    <p class="font-bold text-lg">Total: Rs. <span id="totalPrice">0</span></p>
+                </div>
+                <button class="bg-simrik-teal text-white px-6 py-3 rounded-lg font-semibold hover:bg-simrik-teal-light transition w-full md:w-auto" id="confirmSelection">
+                    Confirm Selection
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="womenBookingModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <div class="flex items-center space-x-3 mb-6">
+                <img src="womanbook.jpg" alt="Women Icon" class="w-8 h-8">
+                <h3 class="text-2xl font-bold text-gray-800">Booking for women</h3>
+            </div>
+            <p class="text-gray-600 mb-6">Providing helpful details to smartly choose bus travel for women.</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                <div class="p-4 bg-pink-50 rounded-lg shadow-sm flex flex-col items-center text-center">
+                    <img src="exclusivedeal.jpg" alt="Exclusive Deals" class="w-16 h-16 mb-2">
+                    <p class="font-semibold text-gray-800">Exclusive deals for women</p>
+                </div>
+                <div class="p-4 bg-purple-50 rounded-lg shadow-sm flex flex-col items-center text-center">
+                    <img src="multiplewomen.jpg" alt="Women Travelling" class="w-16 h-16 mb-2">
+                    <p class="font-semibold text-gray-800">See number of women travelling along</p>
+                </div>
+                <div class="p-4 bg-green-50 rounded-lg shadow-sm flex flex-col items-center text-center">
+                    <img src="pregnantwomen.webp" alt="Priority Helpline" class="w-16 h-16 mb-2">
+                    <p class="font-semibold text-gray-800">Priority Women helpline available</p>
+                </div>
+                <div class="p-4 bg-blue-50 rounded-lg shadow-sm flex flex-col items-center text-center">
+                    <img src="busseatwomen.jpg" alt="Preferred Buses" class="w-16 h-16 mb-2">
+                    <p class="font-semibold text-gray-800">Buses Seat Preferred by women</p>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button class="bg-red-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-600 transition" id="gotItButton">Got it</button>
+            </div>
+        </div>
+    </div>
+
+    <section class="relative bus-image-hero overflow-hidden">
+        <div class="absolute inset-0 hero-gradient"></div>
+
+        <div class="container mx-auto px-4 relative z-10 h-full flex items-center">
+            <div class="max-w-md text-white fade-in-up" data-delay="100">
+                <h1 class="text-3xl md:text-5xl font-extrabold mb-4 leading-tight">
+                    TRAVEL COMFORTABLY, <br>ARRIVE ON TIME
+                </h1>
+                <p class="mb-6 text-base md:text-lg text-gray-200">
+                    Enjoy your journey with fast, free Wi-Fi, premium seating, and the comfort of our A/C Deluxe coaches.
+                </p>
+                <button class="bg-simrik-teal text-white px-6 py-3 rounded-lg font-semibold text-sm hover:bg-simrik-teal-light transition duration-300 shadow-lg">
+                    BOOK A SEAT NOW
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Support Section -->
+    <section class="py-16 px-4 text-center">
+        <h2 class="text-xl md:text-2xl font-semibold text-gray-800 mb-12 fade-in">Supporting You Through Your Journey</h2>
+
+        <div class="max-w-6xl mx-auto bg-white rounded-xl p-4 md:p-6 card-shadow border border-gray-100 fade-in">
+            <div class="flex flex-col lg:flex-row">
+                
+                <!-- Left Side - Bus Image and Text -->
+                <div class="lg:w-3/5 relative rounded-lg overflow-hidden support-bg-image flex flex-col justify-between p-6 md:p-10 text-white">
+                    <div class="absolute inset-0 bg-simrik-dark/70"></div>
+                    
+                    <div class="relative z-10 text-left">
+                        <h3 class="text-2xl md:text-4xl font-extrabold text-white mb-4">TRAVEL COMFORTABLY, ARRIVE ON TIME</h3>
+                        <p class="text-sm mb-6 max-w-sm">
+                            Experience premium bus travel with comfortable seating, on-time departures, and exceptional service.
+                        </p>
+                        <button class="bg-simrik-teal text-white text-base px-6 py-3 font-semibold rounded-lg hover:bg-simrik-teal-light transition duration-300">
+                            BOOK A SEAT NOW
+                        </button>
+                    </div>
+
+                    <div class="relative z-10 text-left text-xs text-gray-300 mt-4">
+                        Saturday
+                    </div>
+                </div>
+
+                <!-- Right Side - Info Card -->
+                <div class="lg:w-2/5 p-4 md:p-6 text-left border-l border-gray-100">
+                    <div class="flex justify-between items-start mb-4">
+                        <h4 class="text-lg font-bold text-gray-800">HOW CAN I CHANGE MY TICKET?</h4>
+                        <button class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times w-5 h-5"></i>
+                        </button>
+                    </div>
+                    
+                    <p class="text-sm text-gray-600 mb-6">
+                        We offer flexible change and cancellation policies on most Simrik Yatayat tickets. Fees may apply depending on the route and timing.
+                    </p>
+
+                    <div class="grid grid-cols-4 gap-4 mb-6">
+                        <div class="text-center">
+                            <i class="fas fa-map-marker-alt w-6 h-6 mx-auto text-simrik-teal mb-1"></i>
+                            <span class="text-xs text-gray-600">Free</span>
+                        </div>
+                        <div class="text-center">
+                            <i class="fas fa-exchange-alt w-6 h-6 mx-auto text-simrik-teal mb-1"></i>
+                            <span class="text-xs text-gray-600">Penalty</span>
+                        </div>
+                        <div class="text-center">
+                            <i class="fas fa-redo-alt w-6 h-6 mx-auto text-simrik-teal mb-1"></i>
+                            <span class="text-xs text-gray-600">Rebook</span>
+                        </div>
+                        <div class="text-center">
+                            <i class="fas fa-money-bill-wave w-6 h-6 mx-auto text-simrik-teal mb-1"></i>
+                            <span class="text-xs text-gray-600">Refund</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center">
+                        <p class="text-sm font-semibold text-gray-800">Priority Minimum Halides Refund</p>
+                        <a href="#" class="text-simrik-teal text-sm font-semibold flex items-center hover:underline">
+                            View refund policy
+                            <i class="fas fa-chevron-right w-4 h-4 ml-1"></i>
+                        </a>
+                    </div>
+                    
+                    <button class="w-full mt-4 bg-simrik-teal text-white text-base px-6 py-3 font-semibold rounded-lg hover:bg-simrik-teal-light transition duration-300">
+                        Get it
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-white pb-16 md:pb-24">
+        <div class="container mx-auto px-4 max-w-6xl">
+            <h3 class="text-2xl font-semibold text-primary-text mb-8 fade-in-up" data-delay="400">
+                Trending destinations
+                <span class="text-base text-gray-500 font-normal ml-2">from Kathmandu</span>
+            </h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                
+                <div class="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition duration-300 relative group destination-card fade-in-up" data-delay="500">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Kathmandu" class="w-full h-full object-cover destination-card-image">
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-bold text-xl text-primary-text mb-2">Kathmandu</h4>
+                        <p class="text-sm text-secondary-text mb-4">The vibrant capital, rich in culture and history.</p>
+                        <button class="bg-simrik-teal text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-simrik-teal-light transition duration-300 w-full">
+                            BOOK SEAT NOW
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition duration-300 relative group destination-card fade-in-up" data-delay="600">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1585409677983-0f6c41ca9c3b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" alt="Pokhara" class="w-full h-full object-cover destination-card-image">
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-bold text-xl text-primary-text mb-2">Pokhara</h4>
+                        <p class="text-sm text-secondary-text mb-4">Lakeside city with stunning mountain views.</p>
+                        <button class="bg-simrik-teal text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-simrik-teal-light transition duration-300 w-full">
+                            BOOK SEAT NOW
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition duration-300 relative group destination-card fade-in-up" data-delay="700">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://we-gov.org/wp-content/uploads/kboard_attached/16/201704/58f6b5b14b24c4386155.jpg" alt="Dharan Street" class="w-full h-full object-cover destination-card-image">
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-bold text-xl text-primary-text mb-2">Dharan</h4>
+                        <p class="text-sm text-secondary-text mb-4">A commercial hub and gateway to the East.</p>
+                        <button class="bg-simrik-teal text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-simrik-teal-light transition duration-300 w-full">
+                            BOOK SEAT NOW
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition duration-300 relative group destination-card fade-in-up" data-delay="800">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRsDceV1mrc0klQ_-YdRfRfpOmVavyeSio0_Q&s" alt="Biratnagar City" class="w-full h-full object-cover destination-card-image">
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-bold text-xl text-primary-text mb-2">Biratnagar</h4>
+                        <p class="text-sm text-secondary-text mb-4">Industrial city with cultural significance.</p>
+                        <button class="bg-simrik-teal text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-simrik-teal-light transition duration-300 w-full">
+                            BOOK SEAT NOW
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Simrik Yatayat Company Section -->
+    <section class="py-0 md:py-0 bg-light-bg">
+        <div class="container mx-auto px-4 max-w-6xl">
+            <div class="text-center mb-16">
+                <h2 class="text-2xl md:text-5xl font-extrabold text-primary-text mb-4">SIMRIK YATAYAT TRAVEL & TOURS PVT. LTD.</h2>
+                <p class="text-xl md:text-2xl font-semibold text-simrik-teal">SIMRIK A/C</p>
+            </div>
+            
+            <div class="relative w-full max-w-5xl mx-auto mb-16 h-[300px] md:h-[550px] bg-center bg-cover rounded-xl shadow-2xl" 
+                 style="background-image: url('simrik bus.png');" 
+                 title="Simrik A/C Bus Service">
+                <div class="absolute inset-0 bg-simrik-teal/30 rounded-xl"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section - Mobile Optimized -->
+    <section class="py-8 md:py-12 bg-white">
+        <div class="container mx-auto px-4 max-w-6xl">
+            <!-- Desktop Features -->
+            <div class="hidden md:flex flex-col md:flex-row justify-center items-start text-center space-y-8 md:space-y-0 md:space-x-12">
+                
+                <div class="max-w-[250px] fade-in-up" data-delay="1100">
+                    <div class="w-16 h-16 rounded-full bg-feature-orange/10 text-feature-orange flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-couch text-2xl"></i>
+                    </div>
+                    <h4 class="text-xl font-semibold text-primary-text mb-2">Seat Guarantee</h4>
+                    <p class="text-sm text-secondary-text">
+                        Comfort, convenience, and hassle-free travel experience with assured seating.
+                    </p>
+                </div>
+
+                <div class="max-w-[250px] fade-in-up" data-delay="1200">
+                    <div class="w-16 h-16 rounded-full bg-feature-orange/10 text-feature-orange flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-bolt text-2xl"></i>
+                    </div>
+                    <h4 class="text-xl font-semibold text-primary-text mb-2">Easy & Quick Booking</h4>
+                    <p class="text-sm text-secondary-text">
+                        Book your seat instantly online and share the travel experience with ease.
+                    </p>
+                </div>
+
+                <div class="max-w-[250px] fade-in-up" data-delay="1300">
+                    <div class="w-16 h-16 rounded-full bg-feature-orange/10 text-feature-orange flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-bus-alt text-2xl"></i>
+                    </div>
+                    <h4 class="text-xl font-semibold text-primary-text mb-2">Best Bus</h4>
+                    <p class="text-sm text-secondary-text">
+                        Providing quality, comfort, and exceptional travel hand experience in our fleet.
+                    </p>
+                </div>
+
+            </div>
+            
+            <!-- Mobile Features -->
+            <div class="md:hidden mobile-features-container">
+                <div class="mobile-feature-item fade-in-up" data-delay="1100">
+                    <div class="w-14 h-14 rounded-full bg-feature-orange/10 text-feature-orange flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-couch text-xl"></i>
+                    </div>
+                    <h4 class="text-lg font-semibold text-primary-text mb-2">Seat Guarantee</h4>
+                    <p class="text-sm text-secondary-text">
+                        Comfort, convenience, and hassle-free travel experience with assured seating.
+                    </p>
+                </div>
+
+                <div class="mobile-feature-item fade-in-up" data-delay="1200">
+                    <div class="w-14 h-14 rounded-full bg-feature-orange/10 text-feature-orange flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-bolt text-xl"></i>
+                    </div>
+                    <h4 class="text-lg font-semibold text-primary-text mb-2">Easy & Quick Booking</h4>
+                    <p class="text-sm text-secondary-text">
+                        Book your seat instantly online and share the travel experience with ease.
+                    </p>
+                </div>
+
+                <div class="mobile-feature-item fade-in-up" data-delay="1300">
+                    <div class="w-14 h-14 rounded-full bg-feature-orange/10 text-feature-orange flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-bus-alt text-xl"></i>
+                    </div>
+                    <h4 class="text-lg font-semibold text-primary-text mb-2">Best Bus</h4>
+                    <p class="text-sm text-secondary-text">
+                        Providing quality, comfort, and exceptional travel hand experience in our fleet.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Book Now Button -->
+            <div class="text-center mt-8 md:mt-12 fade-in-up" data-delay="1400">
+                <button class="bg-simrik-teal text-white px-6 py-3 md:px-8 md:py-4 rounded-lg font-bold text-base md:text-lg hover:bg-simrik-teal-light transition duration-300 shadow-lg w-full md:w-auto">
+                    BOOK YOUR SEAT NOW
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer-pattern bg-footer-dark text-white py-12 md:py-16 mt-12 md:mt-16">
+        <div class="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
+            
+            <div>
+                <p class="text-sm leading-relaxed mb-4 text-gray-300">
+                    We are dedicated to providing swift, easy, and comfortable travel experiences. Your journey is our priority.
+                </p>
+                <p class="text-xs text-gray-400">
+                    Simrik Yatayat is committed to excellence in ground transportation.
+                </p>
+                
+                <!-- Social Media Icons -->
+                <div class="flex space-x-4 mt-4">
+                    <a href="#" class="text-gray-400 hover:text-white transition">
+                        <i class="fab fa-facebook-f text-lg"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition">
+                        <i class="fab fa-twitter text-lg"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition">
+                        <i class="fab fa-instagram text-lg"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition">
+                        <i class="fab fa-youtube text-lg"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition">
+                        <i class="fab fa-linkedin-in text-lg"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div>
+                <h4 class="text-lg font-semibold mb-4 text-gray-300">SIMRIK YATAYAT</h4>
+                <ul class="space-y-1 text-sm text-gray-400">
+                    <li><a href="#" class="hover:text-white transition">About Us</a></li>
+                    <li><a href="#" class="hover:text-white transition">Contact Us</a></li>
+                    <li><a href="#" class="hover:text-white transition">Terms & Conditions</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="text-lg font-semibold mb-4 text-gray-300">We Accept</h4>
+                <div class="flex space-x-2">
+                    <img src="esewa.png" alt="Esewa" class="h-10 md:h-12 custom-logo-radius" >
+                    <img src="khalti.png" alt="Khalti" class="h-10 md:h-12 custom-logo-radius" >
+                </div>
+            </div>
+
+            <div>
+                <h4 class="text-lg font-semibold mb-4 text-gray-300">Technology Partner</h4>
+                <p class="text-white text-lg font-semibold mt-2">SINGHA TECHNE PVT. LTD.</p>
+                <p class="text-xs text-gray-400">Software & Solutions Provider</p>
+            </div>
+        </div>
+        <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-500 text-xs">
+            &copy; 2025 Simrik Yatayat. All rights reserved. | Powered by SINGHA TECHNE PVT. LTD.
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Mobile menu functionality
+            const mobileMenuButton = document.querySelector('.mobile-menu-button');
+            const mobileMenu = document.querySelector('.mobile-menu');
+            
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', () => {
+                    mobileMenu.classList.toggle('active');
+                });
+                
+                
+                document.addEventListener('click', (event) => {
+                    if (!mobileMenu.contains(event.target) && !mobileMenuButton.contains(event.target)) {
+                        mobileMenu.classList.remove('active');
+                    }
+                });
+            }
+            
+            // Intersection Observer for Fade-in Animation
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const delay = entry.target.getAttribute('data-delay');
+                        setTimeout(() => {
+                            entry.target.classList.add('is-visible');
+                        }, delay ? parseInt(delay) : 0);
+                        
+                        
+                        observer.unobserve(entry.target); 
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px' 
+            });
+
+            document.querySelectorAll('.fade-in-up').forEach(element => {
+                observer.observe(element);
+            });
+
+           
+            const supportObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+
+            document.querySelectorAll('.fade-in').forEach(element => {
+                supportObserver.observe(element);
+            });
+
+            
+            const womenBookingButton = document.getElementById('womenBookingButton');
+            const womenBookingToggle = document.getElementById('womenBookingToggle');
+            const womenBookingModal = document.getElementById('womenBookingModal');
+            const closeModalButton = womenBookingModal.querySelector('.close-button');
+            const gotItButton = document.getElementById('gotItButton');
+            const knowMoreLink = document.getElementById('knowMoreLink');
+
+            // Mobile elements
+            const womenBookingToggleMobile = document.getElementById('womenBookingToggleMobile');
+            const knowMoreLinkMobile = document.getElementById('knowMoreLinkMobile');
+
+            function openModal() {
+                womenBookingModal.style.display = 'flex';
+            }
+
+            function closeModal() {
+                womenBookingModal.style.display = 'none';
+            }
+
+            
+            if (knowMoreLink) {
+                knowMoreLink.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    openModal();
+                    if (womenBookingToggle) womenBookingToggle.checked = true;
+                });
+            }
+            
+            if (knowMoreLinkMobile) {
+                knowMoreLinkMobile.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    openModal();
+                    if (womenBookingToggleMobile) womenBookingToggleMobile.checked = true;
+                });
+            }
+
+            
+            if (womenBookingButton) {
+                womenBookingButton.addEventListener('click', (event) => {
+
+                    if (event.target !== womenBookingToggle && !event.target.closest('.toggle-switch')) {
+                        openModal();
+                    }
+                });
+            }
+
+            if (womenBookingToggle) {
+                womenBookingToggle.addEventListener('change', () => {
+                    if (womenBookingToggle.checked) {
+                        openModal();
+                    } else {
+                        closeModal();
+                    }
+                });
+            }
+            
+            if (womenBookingToggleMobile) {
+                womenBookingToggleMobile.addEventListener('change', () => {
+                    if (womenBookingToggleMobile.checked) {
+                        openModal();
+                    } else {
+                        closeModal();
+                    }
+                });
+            }
+
+            closeModalButton.addEventListener('click', closeModal);
+            gotItButton.addEventListener('click', closeModal);
+
+            // Close modal if clicking outside the modal content
+            window.addEventListener('click', (event) => {
+                if (event.target === womenBookingModal) {
+                    closeModal();
+                }
+            });
+
+            // --- Passenger Counter Logic ---
+            const passengerInputContainer = document.getElementById('passengerInputContainer');
+            const passengerCountDisplay = document.getElementById('passengerCountDisplay');
+            const passengerDropdown = document.getElementById('passengerDropdown');
+            const adultCountSpan = document.getElementById('adultCount');
+            
+            let adultCount = parseInt(adultCountSpan.textContent);
+
+            function updatePassengerDisplay() {
+                let totalPassengers = adultCount;
+                if (passengerCountDisplay) passengerCountDisplay.value = `${totalPassengers} Passenger${totalPassengers > 1 ? 's' : ''}`;
+                if (document.getElementById('passengerCountDisplayMobile')) {
+                    document.getElementById('passengerCountDisplayMobile').value = `${totalPassengers} Passenger${totalPassengers > 1 ? 's' : ''}`;
+                }
+            }
+
+            if (passengerInputContainer) {
+                passengerInputContainer.addEventListener('click', (event) => {
+                    // Toggle dropdown visibility only if clicking the input or its parent container, not the buttons
+                    if (event.target === passengerCountDisplay || event.target.closest('#passengerInputContainer') && !event.target.closest('.passenger-control')) {
+                        passengerDropdown.classList.toggle('show');
+                    }
+                });
+            }
+
+            if (passengerDropdown) {
+                passengerDropdown.addEventListener('click', (event) => {
+                    const target = event.target;
+                    if (target.tagName === 'BUTTON') {
+                        const type = target.dataset.type;
+                        const countTarget = target.dataset.target;
+
+                        if (countTarget === 'adults') {
+                            if (type === 'minus' && adultCount > 1) {
+                                adultCount--;
+                            } else if (type === 'plus') {
+                                adultCount++;
+                            }
+                            adultCountSpan.textContent = adultCount;
+                        }
+                        updatePassengerDisplay();
+                    }
+                    event.stopPropagation(); // Prevent clicks inside dropdown from closing it immediately
+                });
+            }
+
+            // Close dropdown if clicking outside
+            window.addEventListener('click', (event) => {
+                if (passengerInputContainer && !passengerInputContainer.contains(event.target) && !passengerDropdown.contains(event.target)) {
+                    passengerDropdown.classList.remove('show');
+                }
+            });
+
+            // Initialize display
+            updatePassengerDisplay();
+
+            // Set today's date as default for the date input
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0'); 
+            const dd = String(today.getDate()).padStart(2, '0');
+            const todayDate = `${yyyy}-${mm}-${dd}`;
+            
+            if (document.getElementById('departDate')) document.getElementById('departDate').value = todayDate;
+            if (document.getElementById('departDateMobile')) document.getElementById('departDateMobile').value = todayDate;
+
+            // --- Search Overlay Logic ---
+            const searchBusButton = document.getElementById('searchBusButton');
+            const searchBusButtonMobile = document.getElementById('searchBusButtonMobile');
+            const searchOverlay = document.getElementById('searchOverlay');
+            const closeOverlay = document.getElementById('closeOverlay');
+            const searchResults = document.getElementById('searchResults');
+            
+            // Handle bus search
+            function handleSearch() {
+                const from = document.getElementById('fromDestination') ? document.getElementById('fromDestination').value : 
+                            document.getElementById('fromDestinationMobile').value;
+                const to = document.getElementById('toDestination') ? document.getElementById('toDestination').value : 
+                          document.getElementById('toDestinationMobile').value;
+                const date = document.getElementById('departDate') ? document.getElementById('departDate').value : 
+                            document.getElementById('departDateMobile').value;
+                const passengers = adultCount;
+
+                if (from && to && date && passengers > 0) {
+                    // Show search overlay with animation
+                    searchOverlay.classList.add('active');
+                    document.body.style.overflow = 'hidden'; 
+                    
+                    // Animate the search results
+                    setTimeout(() => {
+                        searchResults.classList.add('active');
+                    }, 100);
+                    
+                    // In a real application, you would send this data to a backend API
+                    console.log(`Searching for bus from ${from} to ${to} on ${date} for ${passengers} passenger(s).`);
+                } else {
+                    alert('Please fill in all search details.');
+                }
+            }
+
+            if (searchBusButton) {
+                searchBusButton.addEventListener('click', handleSearch);
+            }
+            
+            if (searchBusButtonMobile) {
+                searchBusButtonMobile.addEventListener('click', handleSearch);
+            }
+
+            // Close overlay
+            closeOverlay.addEventListener('click', () => {
+                searchOverlay.classList.remove('active');
+                searchResults.classList.remove('active');
+                document.body.style.overflow = 'auto'; 
+            });
+
+            // Close overlay if clicking outside the content
+            searchOverlay.addEventListener('click', (event) => {
+                if (event.target === searchOverlay) {
+                    searchOverlay.classList.remove('active');
+                    searchResults.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                }
+            });
+
+            // --- Seat Selection Logic ---
+            const seatSelectionModal = document.getElementById('seatSelectionModal');
+            const selectedBusName = document.getElementById('selectedBusName');
+            const busSeatLayout = document.getElementById('busSeatLayout');
+            const selectedSeatsCount = document.getElementById('selectedSeatsCount');
+            const totalPrice = document.getElementById('totalPrice');
+            const confirmSelection = document.getElementById('confirmSelection');
+            const closeSeatModal = seatSelectionModal.querySelector('.close-button');
+            
+            let selectedSeats = [];
+            let currentBusPrice = 0;
+            
+            // Bus data with prices and seat layouts
+            const busData = {
+                'simrik-deluxe': {
+                    name: 'Simrik Deluxe A/C',
+                    price: 1200,
+                    rows: 10,
+                    seatsPerRow: 4
+                },
+                'simrik-express': {
+                    name: 'Simrik Express',
+                    price: 900,
+                    rows: 8,
+                    seatsPerRow: 4
+                },
+                'simrik-night': {
+                    name: 'Simrik Night Rider',
+                    price: 1100,
+                    rows: 6,
+                    seatsPerRow: 4
+                }
+            };
+            
+            // Handle bus selection
+            document.querySelectorAll('.select-bus').forEach(button => {
+                button.addEventListener('click', () => {
+                    const busType = button.getAttribute('data-bus');
+                    const bus = busData[busType];
+                    
+                    if (bus) {
+                        // Set bus details
+                        selectedBusName.textContent = `Select Seats - ${bus.name}`;
+                        currentBusPrice = bus.price;
+                        
+                        // Generate seat layout
+                        generateSeatLayout(bus.rows, bus.seatsPerRow);
+                        
+                        // Reset selection
+                        selectedSeats = [];
+                        updateSeatSelectionUI();
+                        
+                        // Close search overlay and open seat modal
+                        searchOverlay.classList.remove('active');
+                        searchResults.classList.remove('active');
+                        document.body.style.overflow = 'auto';
+                        
+                        // Show seat selection modal
+                        seatSelectionModal.style.display = 'flex';
+                    }
+                });
+            });
+            
+            // Generate bus seat layout
+            function generateSeatLayout(rows, seatsPerRow) {
+                busSeatLayout.innerHTML = '';
+                
+                // Add driver seat
+                const driverSeat = document.createElement('div');
+                driverSeat.className = 'driver-seat';
+                driverSeat.textContent = 'Driver';
+                busSeatLayout.appendChild(driverSeat);
+                
+                // Generate rows of seats
+                for (let row = 1; row <= rows; row++) {
+                    const seatRow = document.createElement('div');
+                    seatRow.className = 'seat-row';
+                    
+                    for (let seatNum = 1; seatNum <= seatsPerRow; seatNum++) {
+                        const seat = document.createElement('div');
+                        const seatId = `${row}${String.fromCharCode(64 + seatNum)}`;
+                        
+                        // Randomly set some seats as occupied for demo
+                        const isOccupied = Math.random() < 0.3;
+                        
+                        seat.className = `seat ${isOccupied ? 'occupied' : 'available'}`;
+                        seat.textContent = seatId;
+                        seat.setAttribute('data-seat', seatId);
+                        
+                        if (!isOccupied) {
+                            seat.addEventListener('click', handleSeatSelection);
+                        }
+                        
+                        seatRow.appendChild(seat);
+                        
+                        // Add aisle after 2nd seat
+                        if (seatNum === Math.floor(seatsPerRow / 2)) {
+                            const aisle = document.createElement('div');
+                            aisle.className = 'aisle-space';
+                            seatRow.appendChild(aisle);
+                        }
+                    }
+                    
+                    busSeatLayout.appendChild(seatRow);
+                }
+            }
+            
+            // Handle seat selection
+            function handleSeatSelection(event) {
+                const seat = event.target;
+                const seatId = seat.getAttribute('data-seat');
+                
+                if (selectedSeats.includes(seatId)) {
+                    // Deselect seat
+                    selectedSeats = selectedSeats.filter(id => id !== seatId);
+                    seat.classList.remove('selected');
+                    seat.classList.add('available');
+                } else {
+                    // Select seat
+                    selectedSeats.push(seatId);
+                    seat.classList.remove('available');
+                    seat.classList.add('selected');
+                }
+                
+                updateSeatSelectionUI();
+            }
+            
+            // Update seat selection UI
+            function updateSeatSelectionUI() {
+                selectedSeatsCount.textContent = selectedSeats.length;
+                totalPrice.textContent = selectedSeats.length * currentBusPrice;
+            }
+            
+            // Confirm seat selection
+            confirmSelection.addEventListener('click', () => {
+                if (selectedSeats.length > 0) {
+                    alert(`You have selected seats: ${selectedSeats.join(', ')}. Total: Rs. ${selectedSeats.length * currentBusPrice}`);
+                    seatSelectionModal.style.display = 'none';
+                } else {
+                    alert('Please select at least one seat.');
+                }
+            });
+            
+            // Close seat modal
+            closeSeatModal.addEventListener('click', () => {
+                seatSelectionModal.style.display = 'none';
+            });
+            
+            // Close seat modal if clicking outside
+            window.addEventListener('click', (event) => {
+                if (event.target === seatSelectionModal) {
+                    seatSelectionModal.style.display = 'none';
+                }
+            });
+
+            // Add smooth dropdown animation
+            const dropdowns = document.querySelectorAll('select');
+            dropdowns.forEach(dropdown => {
+                dropdown.addEventListener('focus', () => {
+                    dropdown.parentElement.classList.add('bg-gray-600/50');
+                });
+                
+                dropdown.addEventListener('blur', () => {
+                    dropdown.parentElement.classList.remove('bg-gray-600/50');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
