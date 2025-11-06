@@ -524,6 +524,25 @@
                 cursor: pointer;
                 z-index: 10;
             }
+
+            /* Mobile passenger dropdown */
+            .mobile-passenger-dropdown {
+                display: none;
+                position: absolute;
+                background-color: white;
+                min-width: 180px;
+                box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+                z-index: 100;
+                border-radius: 8px;
+                padding: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                top: calc(100% + 10px);
+            }
+            
+            .mobile-passenger-dropdown.show {
+                display: block;
+            }
         }
         
         @media (min-width: 768px) {
@@ -712,10 +731,21 @@
                         <span class="text-gray-400 text-xs">Depart</span>
                     </div>
                     
-                    <div class="mobile-booking-item">
+                    <div class="mobile-booking-item mobile-passenger-counter-container" id="mobilePassengerInputContainer">
                         <span class="text-simrik-teal text-xs uppercase font-semibold">Passengers</span>
                         <input type="text" id="passengerCountDisplayMobile" value="1 Passenger" class="header-input w-full text-center font-bold cursor-pointer" readonly>
                         <span class="text-gray-400 text-xs">Total</span>
+                        
+                        <div id="mobilePassengerDropdown" class="mobile-passenger-dropdown dropdown-animate">
+                            <div class="passenger-control">
+                                <span class="text-gray-800 font-medium">Adults</span>
+                                <div class="flex items-center space-x-2">
+                                    <button type="button" data-type="minus" data-target="mobileAdults">-</button>
+                                    <span id="mobileAdultCount" class="text-gray-800 font-bold w-6 text-center">1</span>
+                                    <button type="button" data-type="plus" data-target="mobileAdults">+</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -1231,7 +1261,6 @@
                     mobileMenu.classList.toggle('active');
                 });
                 
-                
                 document.addEventListener('click', (event) => {
                     if (!mobileMenu.contains(event.target) && !mobileMenuButton.contains(event.target)) {
                         mobileMenu.classList.remove('active');
@@ -1258,7 +1287,6 @@
                             entry.target.classList.add('is-visible');
                         }, delay ? parseInt(delay) : 0);
                         
-                        
                         observer.unobserve(entry.target); 
                     }
                 });
@@ -1271,7 +1299,6 @@
                 observer.observe(element);
             });
 
-           
             const supportObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
@@ -1286,102 +1313,44 @@
                 supportObserver.observe(element);
             });
 
-            
-            const womenBookingButton = document.getElementById('womenBookingButton');
-            const womenBookingToggle = document.getElementById('womenBookingToggle');
-            const womenBookingModal = document.getElementById('womenBookingModal');
-            const closeModalButton = womenBookingModal.querySelector('.close-button');
-            const gotItButton = document.getElementById('gotItButton');
-            const knowMoreLink = document.getElementById('knowMoreLink');
-
-            // Mobile elements
-            const womenBookingToggleMobile = document.getElementById('womenBookingToggleMobile');
-            const knowMoreLinkMobile = document.getElementById('knowMoreLinkMobile');
-
-            function openModal() {
-                womenBookingModal.style.display = 'flex';
-            }
-
-            function closeModal() {
-                womenBookingModal.style.display = 'none';
-            }
-
-            
-            if (knowMoreLink) {
-                knowMoreLink.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    openModal();
-                    if (womenBookingToggle) womenBookingToggle.checked = true;
-                });
-            }
-            
-            if (knowMoreLinkMobile) {
-                knowMoreLinkMobile.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    openModal();
-                    if (womenBookingToggleMobile) womenBookingToggleMobile.checked = true;
-                });
-            }
-
-            
-            if (womenBookingButton) {
-                womenBookingButton.addEventListener('click', (event) => {
-
-                    if (event.target !== womenBookingToggle && !event.target.closest('.toggle-switch')) {
-                        openModal();
-                    }
-                });
-            }
-
-            if (womenBookingToggle) {
-                womenBookingToggle.addEventListener('change', () => {
-                    if (womenBookingToggle.checked) {
-                        openModal();
-                    } else {
-                        closeModal();
-                    }
-                });
-            }
-            
-            if (womenBookingToggleMobile) {
-                womenBookingToggleMobile.addEventListener('change', () => {
-                    if (womenBookingToggleMobile.checked) {
-                        openModal();
-                    } else {
-                        closeModal();
-                    }
-                });
-            }
-
-            closeModalButton.addEventListener('click', closeModal);
-            gotItButton.addEventListener('click', closeModal);
-
-            // Close modal if clicking outside the modal content
-            window.addEventListener('click', (event) => {
-                if (event.target === womenBookingModal) {
-                    closeModal();
-                }
-            });
-
             // --- Passenger Counter Logic ---
+            // Desktop passenger counter
             const passengerInputContainer = document.getElementById('passengerInputContainer');
             const passengerCountDisplay = document.getElementById('passengerCountDisplay');
             const passengerDropdown = document.getElementById('passengerDropdown');
             const adultCountSpan = document.getElementById('adultCount');
             
-            let adultCount = parseInt(adultCountSpan.textContent);
+            let adultCount = 1; // Initialize with 1
+
+            // Mobile passenger counter
+            const mobilePassengerInputContainer = document.getElementById('mobilePassengerInputContainer');
+            const passengerCountDisplayMobile = document.getElementById('passengerCountDisplayMobile');
+            const mobilePassengerDropdown = document.getElementById('mobilePassengerDropdown');
+            const mobileAdultCountSpan = document.getElementById('mobileAdultCount');
+            
+            let mobileAdultCount = 1; // Initialize with 1
 
             function updatePassengerDisplay() {
-                let totalPassengers = adultCount;
-                if (passengerCountDisplay) passengerCountDisplay.value = `${totalPassengers} Passenger${totalPassengers > 1 ? 's' : ''}`;
-                if (document.getElementById('passengerCountDisplayMobile')) {
-                    document.getElementById('passengerCountDisplayMobile').value = `${totalPassengers} Passenger${totalPassengers > 1 ? 's' : ''}`;
+                // Update desktop display
+                if (passengerCountDisplay) {
+                    passengerCountDisplay.value = `${adultCount} Passenger${adultCount > 1 ? 's' : ''}`;
+                }
+                if (adultCountSpan) {
+                    adultCountSpan.textContent = adultCount;
+                }
+                
+                // Update mobile display
+                if (passengerCountDisplayMobile) {
+                    passengerCountDisplayMobile.value = `${mobileAdultCount} Passenger${mobileAdultCount > 1 ? 's' : ''}`;
+                }
+                if (mobileAdultCountSpan) {
+                    mobileAdultCountSpan.textContent = mobileAdultCount;
                 }
             }
 
+            // Desktop passenger dropdown
             if (passengerInputContainer) {
                 passengerInputContainer.addEventListener('click', (event) => {
-                    // Toggle dropdown visibility only if clicking the input or its parent container, not the buttons
                     if (event.target === passengerCountDisplay || event.target.closest('#passengerInputContainer') && !event.target.closest('.passenger-control')) {
                         passengerDropdown.classList.toggle('show');
                     }
@@ -1401,18 +1370,49 @@
                             } else if (type === 'plus') {
                                 adultCount++;
                             }
-                            adultCountSpan.textContent = adultCount;
+                            updatePassengerDisplay();
                         }
-                        updatePassengerDisplay();
                     }
-                    event.stopPropagation(); // Prevent clicks inside dropdown from closing it immediately
+                    event.stopPropagation();
                 });
             }
 
-            // Close dropdown if clicking outside
+            // Mobile passenger dropdown
+            if (mobilePassengerInputContainer) {
+                mobilePassengerInputContainer.addEventListener('click', (event) => {
+                    if (event.target === passengerCountDisplayMobile || event.target.closest('#mobilePassengerInputContainer') && !event.target.closest('.passenger-control')) {
+                        mobilePassengerDropdown.classList.toggle('show');
+                    }
+                });
+            }
+
+            if (mobilePassengerDropdown) {
+                mobilePassengerDropdown.addEventListener('click', (event) => {
+                    const target = event.target;
+                    if (target.tagName === 'BUTTON') {
+                        const type = target.dataset.type;
+                        const countTarget = target.dataset.target;
+
+                        if (countTarget === 'mobileAdults') {
+                            if (type === 'minus' && mobileAdultCount > 1) {
+                                mobileAdultCount--;
+                            } else if (type === 'plus') {
+                                mobileAdultCount++;
+                            }
+                            updatePassengerDisplay();
+                        }
+                    }
+                    event.stopPropagation();
+                });
+            }
+
+            // Close dropdowns if clicking outside
             window.addEventListener('click', (event) => {
-                if (passengerInputContainer && !passengerInputContainer.contains(event.target) && !passengerDropdown.contains(event.target)) {
+                if (passengerInputContainer && !passengerInputContainer.contains(event.target) && passengerDropdown && !passengerDropdown.contains(event.target)) {
                     passengerDropdown.classList.remove('show');
+                }
+                if (mobilePassengerInputContainer && !mobilePassengerInputContainer.contains(event.target) && mobilePassengerDropdown && !mobilePassengerDropdown.contains(event.target)) {
+                    mobilePassengerDropdown.classList.remove('show');
                 }
             });
 
@@ -1437,14 +1437,22 @@
             const searchResults = document.getElementById('searchResults');
             
             // Handle bus search
-            function handleSearch() {
-                const from = document.getElementById('fromDestination') ? document.getElementById('fromDestination').value : 
-                            document.getElementById('fromDestinationMobile').value;
-                const to = document.getElementById('toDestination') ? document.getElementById('toDestination').value : 
-                          document.getElementById('toDestinationMobile').value;
-                const date = document.getElementById('departDate') ? document.getElementById('departDate').value : 
-                            document.getElementById('departDateMobile').value;
-                const passengers = adultCount;
+            function handleSearch(isMobile = false) {
+                let from, to, date, passengers;
+
+                if (isMobile) {
+                    from = document.getElementById('fromDestinationMobile').value;
+                    to = document.getElementById('toDestinationMobile').value;
+                    date = document.getElementById('departDateMobile').value;
+                    passengers = mobileAdultCount;
+                } else {
+                    from = document.getElementById('fromDestination').value;
+                    to = document.getElementById('toDestination').value;
+                    date = document.getElementById('departDate').value;
+                    passengers = adultCount;
+                }
+
+                console.log('Search details:', { from, to, date, passengers, isMobile });
 
                 if (from && to && date && passengers > 0) {
                     // Show search overlay with animation
@@ -1456,19 +1464,19 @@
                         searchResults.classList.add('active');
                     }, 100);
                     
-                    // In a real application, you would send this data to a backend API
                     console.log(`Searching for bus from ${from} to ${to} on ${date} for ${passengers} passenger(s).`);
                 } else {
                     alert('Please fill in all search details.');
+                    console.log('Validation failed:', { from, to, date, passengers });
                 }
             }
 
             if (searchBusButton) {
-                searchBusButton.addEventListener('click', handleSearch);
+                searchBusButton.addEventListener('click', () => handleSearch(false));
             }
             
             if (searchBusButtonMobile) {
-                searchBusButtonMobile.addEventListener('click', handleSearch);
+                searchBusButtonMobile.addEventListener('click', () => handleSearch(true));
             }
 
             // Close overlay
@@ -1652,6 +1660,80 @@
                 dropdown.addEventListener('blur', () => {
                     dropdown.parentElement.classList.remove('bg-gray-600/50');
                 });
+            });
+
+            // Women booking modal functionality
+            const womenBookingButton = document.getElementById('womenBookingButton');
+            const womenBookingToggle = document.getElementById('womenBookingToggle');
+            const womenBookingModal = document.getElementById('womenBookingModal');
+            const closeModalButton = womenBookingModal.querySelector('.close-button');
+            const gotItButton = document.getElementById('gotItButton');
+            const knowMoreLink = document.getElementById('knowMoreLink');
+
+            // Mobile elements
+            const womenBookingToggleMobile = document.getElementById('womenBookingToggleMobile');
+            const knowMoreLinkMobile = document.getElementById('knowMoreLinkMobile');
+
+            function openModal() {
+                womenBookingModal.style.display = 'flex';
+            }
+
+            function closeModal() {
+                womenBookingModal.style.display = 'none';
+            }
+
+            if (knowMoreLink) {
+                knowMoreLink.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    openModal();
+                    if (womenBookingToggle) womenBookingToggle.checked = true;
+                });
+            }
+            
+            if (knowMoreLinkMobile) {
+                knowMoreLinkMobile.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    openModal();
+                    if (womenBookingToggleMobile) womenBookingToggleMobile.checked = true;
+                });
+            }
+
+            if (womenBookingButton) {
+                womenBookingButton.addEventListener('click', (event) => {
+                    if (event.target !== womenBookingToggle && !event.target.closest('.toggle-switch')) {
+                        openModal();
+                    }
+                });
+            }
+
+            if (womenBookingToggle) {
+                womenBookingToggle.addEventListener('change', () => {
+                    if (womenBookingToggle.checked) {
+                        openModal();
+                    } else {
+                        closeModal();
+                    }
+                });
+            }
+            
+            if (womenBookingToggleMobile) {
+                womenBookingToggleMobile.addEventListener('change', () => {
+                    if (womenBookingToggleMobile.checked) {
+                        openModal();
+                    } else {
+                        closeModal();
+                    }
+                });
+            }
+
+            closeModalButton.addEventListener('click', closeModal);
+            gotItButton.addEventListener('click', closeModal);
+
+            // Close modal if clicking outside the modal content
+            window.addEventListener('click', (event) => {
+                if (event.target === womenBookingModal) {
+                    closeModal();
+                }
             });
         });
     </script>
