@@ -431,6 +431,7 @@
                 border-radius: 16px;
                 padding: 1rem;
                 margin-top: 1rem;
+                position: relative;
             }
             
             .mobile-booking-row {
@@ -509,6 +510,19 @@
             
             .mobile-menu-item:last-child {
                 border-bottom: none;
+            }
+
+            /* Mobile booking close button */
+            .mobile-booking-close {
+                position: absolute;
+                top: 10px;
+                right: 15px;
+                background: none;
+                border: none;
+                color: white;
+                font-size: 1.2rem;
+                cursor: pointer;
+                z-index: 10;
             }
         }
         
@@ -660,7 +674,12 @@
             </div>
             
             <!-- Mobile Booking Form -->
-            <div class="md:hidden w-full mobile-booking-container">
+            <div class="md:hidden w-full mobile-booking-container" id="mobileBookingContainer">
+                <!-- Close button for mobile booking -->
+                <button class="mobile-booking-close" id="mobileBookingClose">
+                    <i class="fas fa-times"></i>
+                </button>
+                
                 <div class="mobile-booking-row">
                     <div class="mobile-booking-item">
                         <span class="text-simrik-teal text-xs uppercase font-semibold">From</span>
@@ -1217,6 +1236,16 @@
                     if (!mobileMenu.contains(event.target) && !mobileMenuButton.contains(event.target)) {
                         mobileMenu.classList.remove('active');
                     }
+                });
+            }
+            
+            // Mobile booking close functionality
+            const mobileBookingClose = document.getElementById('mobileBookingClose');
+            const mobileBookingContainer = document.getElementById('mobileBookingContainer');
+            
+            if (mobileBookingClose && mobileBookingContainer) {
+                mobileBookingClose.addEventListener('click', () => {
+                    mobileBookingContainer.style.display = 'none';
                 });
             }
             
